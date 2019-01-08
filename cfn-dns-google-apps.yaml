@@ -1,0 +1,48 @@
+  AWSTemplateFormatVersion: "2010-09-09"
+  
+  Description: Create DNS records for Office365
+  
+  Parameters:
+    ZoneId: 
+      Type: AWS::Route53::HostedZone::Id
+      Description: Enter a Route 53 ZoneId to add FastMail records to
+  
+    DomainName: 
+      Type: String
+      Description: Enter domain name to use for the DNS records
+      Default: domain.com
+
+  Resources:
+    MXRecords:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneId: !Ref ZoneId
+        Name: !Ref DomainName
+        Type: MX
+        TTL: '3600'
+        ResourceRecords:
+        - '1 ASPMX.L.GOOGLE.COM.'
+        - '5 ALT1.ASPMX.L.GOOGLE.COM.'
+        - '5 ALT2.ASPMX.L.GOOGLE.COM.'
+        - '10 ASPMX2.GOOGLEMAIL.COM.'
+        - '10 ASPMX3.GOOGLEMAIL.COM.'
+    
+    WebMailRecord:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneId: !Ref ZoneId
+        Name: !Join [ ., [ 'mail', !Ref DomainName]] 
+        Type: CNAME
+        TTL: '3600'
+        ResourceRecords:
+        - 'ghs.googlehosted.com.'
+
+    SPFRecord:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneId: !Ref ZoneId
+        Name: !Ref DomainName
+        Type: TXT
+        TTL: '3600'
+        ResourceRecords:
+        - '"v=spf1 include:_spf.google.com -all"'
